@@ -4,13 +4,15 @@
 #include <pthread.h>
 #include <stack>
 #include <vector>
+#include <unistd.h>
 #include <iostream>
 using namespace std;
 
 //Variables Globales
 stack <int> pila;
-vector <int> referenciasPasadas;
+vector <int> checkR;
 
+int fallosG;
 int memoria[20];
 
 void* genRandNum(void*){
@@ -20,9 +22,11 @@ void* genRandNum(void*){
     //El ciclo genera n cantidad de referencias
     for(int i=0; i<5; i++){
 
-        int num = rand() % (101 - 1);       //Generar numeros aleatorios entre 0-100
+        int num = rand() % (101 - 1);       //Generar numeros aleatorios entre 1-100
         cout<<"Numero de referencia de pagina: "<<num<<endl;
         pila.push(num);
+
+
 
     }
     
@@ -54,19 +58,20 @@ void* getReference(void*){
 
     int length = (sizeof(memoria)/ sizeof(*memoria));
     int fallos = 0;
-    int espaciosAtras = 0;
 
     for(int i=0;i<length; i++){
         
         if(rPagina == memoria[i]){
+            
             //El numero ya esta en el arreglo
+
         }else if(checkMem(memoria)){         //Si el arreglo esta lleno
 
             //Buscar cual reemplazar
             //El menos recientemente usado es el que esta en la ultima posicion del vector 
             for(int j=0;j<20;j++){
 
-                if(memoria[i] == referenciasPasadas.back()){
+                if(memoria[i] == checkR.back()){
 
                     memoria[i] = rPagina;
                     fallos++;
@@ -80,13 +85,20 @@ void* getReference(void*){
             
             //La referencia no esta en memoria, la agregamos y incrementamos los fallos
             memoria[i] = rPagina;
-            referenciasPasadas.push_back(rPagina);  //Meto al vector, esto es auxiliar para saber cuales son mis referencias ya ingresadas. 
+            checkR.push_back(rPagina);  //Meto al vector, esto es auxiliar para saber cuales son mis referencias ya ingresadas. 
             fallos++;
 
         }
 
     }
 
+    fallosG = fallos;
+
+}
+
+void* printFallos(void*){
+
+    cout<<"Fallos: "<<fallosG<<endl;
 
 }
 
@@ -106,17 +118,19 @@ void showStack(stack <int> s){
 
 int main(){
 
-    pthread_t thread1, thread2;
-    int iret1, iret2;
+    pthread_t thread1, thread2, thread3;
+    int iret1, iret2, iret3;
 
     //Creamos hilos independientes
     iret1 = pthread_create(&thread1, NULL, genRandNum, NULL);
     iret2 = pthread_create(&thread2, NULL, getReference, NULL);
+    iret2 = pthread_create(&thread3, NULL, printFallos, NULL);
 
     pthread_join(thread1, NULL);
-
-    cout<<"The stack is: ";
-    showStack(pila);
+    pthread_join(thread2, NULL);
+    usleep(30000);                  //Hilo 2 espera 3 segundos
+    pthread_join(thread3, NULL);
+    usleep(100000);                 //Hilo 3 espera 10 segundos
 
     pthread_exit(NULL);    
     return 0;
