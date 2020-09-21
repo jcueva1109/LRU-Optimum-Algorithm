@@ -143,9 +143,10 @@ void* getReference(void *){
 			int actual = memoria[0];
 			for (int j = 0; j < 5; j++)
 			{
-				actual = memoria[0] for (int i = checkR.size() - 1; i > -1; i--)
+               
+				for (int i = checkR.size() - 1; i > -1; i--)
 				{
-                    if(actual<)
+                    if(numero<)
 				}
 			}
 		}
