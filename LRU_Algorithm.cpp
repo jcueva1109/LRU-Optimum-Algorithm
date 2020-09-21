@@ -139,12 +139,11 @@ void* getReference(void *){
 			cout << "lleno" << endl;
 			// //Buscar cual reemplazar
 			// //El menos recientemente usado es el que esta en la ultima posicion del vector
-			int numero=getR;
+			int numero=getReferenced(memoria[0]);
 			int actual = memoria[0];
 			for (int j = 0; j < 5; j++)
 			{
-                
-				for (int i = checkR.size() - 1; i > -1; i--)
+				actual = memoria[0] for (int i = checkR.size() - 1; i > -1; i--)
 				{
                     if(actual<)
 				}
