@@ -3,17 +3,21 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <stack>
+#include <vector>
 #include <iostream>
 using namespace std;
 
 //Variables Globales
 stack <int> pila;
+vector <int> referenciasPasadas;
+
 int memoria[20];
 
 void* genRandNum(void*){
 
     srand(time(NULL));
 
+    //El ciclo genera n cantidad de referencias
     for(int i=0; i<5; i++){
 
         int num = rand() % (101 - 1);       //Generar numeros aleatorios entre 0-100
@@ -59,17 +63,24 @@ void* getReference(void*){
         }else if(checkMem(memoria)){         //Si el arreglo esta lleno
 
             //Buscar cual reemplazar
-            //1. Cual fue la referencia mas ultima
-            for(int atras=0;atras<20;atras++){
+            //El menos recientemente usado es el que esta en la ultima posicion del vector 
+            for(int j=0;j<20;j++){
 
-                
+                if(memoria[i] == referenciasPasadas.back()){
+
+                    memoria[i] = rPagina;
+                    fallos++;
+
+                }
 
             }
 
 
         }else{
             
+            //La referencia no esta en memoria, la agregamos y incrementamos los fallos
             memoria[i] = rPagina;
+            referenciasPasadas.push_back(rPagina);  //Meto al vector, esto es auxiliar para saber cuales son mis referencias ya ingresadas. 
             fallos++;
 
         }
@@ -79,6 +90,7 @@ void* getReference(void*){
 
 }
 
+//Mostrar contenido de la pila
 void showStack(stack <int> s){
 
     while(!s.empty()){
