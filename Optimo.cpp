@@ -2,7 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <stack>
+#include <unistd.h>
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -15,9 +15,11 @@ int hit=0;
 int cual=0;
 
 struct op{
+
     int page;
     int next;
     int pos;
+
 };
 
 void* genRandNum(void*){
@@ -25,11 +27,11 @@ void* genRandNum(void*){
     srand(time(NULL));
     
     //El ciclo genera n cantidad de referencias
-    for(int i=0; i<80; i++){
-        int num = rand() % (101 - 1); //Generar numeros aleatorios entre 0-100
-        // cout<<"Numero de referencia de pagina: "<<num<<endl;
+    for(int i=0; i<200; i++){
+        int num = rand() % (101 - 1); //Generar numeros aleatorios entre 1-100
         ingresar.push_back(num);
     }
+    
 }
 
 bool rep(int x){
@@ -48,9 +50,9 @@ bool rep(int x){
 }
 
 int change(int index){
-    if(index==ingresar.size()-1){
-        return ingresar.size()-1;
-    }
+    // if(index==ingresar.size()-1){
+    //     return ingresar.size()-1;
+    // }
     vector<op> ver;
     for (int i = 0; i < 20; i++)
     {
@@ -89,6 +91,7 @@ int change(int index){
 }
 
 void* opr(void*){
+    fallos=0;
     int newNum= 0;
     for (int j = 0; j < ingresar.size(); j++)
     {
@@ -98,9 +101,9 @@ void* opr(void*){
             {
                 if(memoria[i]==NULL){
                     if(rep(newNum)){
-                        cout<<"h";
+                        // cout<<"h";
                         hit=hit+1;
-                    }else{
+                    }else{//agregar si no esta rep
                         fallos++;
                         memoria[i]=newNum;
                         break;
@@ -108,9 +111,9 @@ void* opr(void*){
                 }
             }
         }else{
-            if(rep(newNum)){
-                cout<<"h";
-                hit=hit+1;
+            if(rep(newNum)){    //Si lo encuentra
+                // cout<<"h";
+                hit++;
             }else{
                 //llamamos cual es el que vamos a cambiar y se cambia
                 fallos++;
@@ -136,13 +139,32 @@ void* opr(void*){
     
 }
 
+void* printFallos(void*){
+
+    cout<<"Fallos: "<<fallos<<endl;
+    return NULL;
+
+}
+
 int main(){
-    pthread_t thread1, thread2;
-    int iret1, iret2;
-    iret1 = pthread_create(&thread1, NULL, genRandNum, NULL);
-    pthread_join(thread1, NULL);
-    iret2 = pthread_create(&thread2, NULL, opr, NULL);
-    pthread_join(thread2, NULL);
+    
+    pthread_t thread1, thread2, thread3;
+    int iret1, iret2, iret3;
+    
+    while(true){
+
+        iret1 = pthread_create(&thread1, NULL, genRandNum, NULL);
+            pthread_join(thread1, NULL);
+
+        iret2 = pthread_create(&thread2, NULL, opr, NULL);
+            pthread_join(thread2, NULL);
+            sleep(3);
+        fallos=0;
+        iret3 = pthread_create(&thread3, NULL, printFallos, NULL);
+            pthread_join(thread3, NULL);
+            sleep(10);
+    }
+
     
     pthread_exit(NULL);
     return 0;
