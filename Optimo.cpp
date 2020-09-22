@@ -6,34 +6,25 @@
 #include <vector>
 #include <iostream>
 using namespace std;
-
 //Variables globales
 int memoria[20];
 vector<int> ingresar;
 int fallos=0;
 int hit=0;
-int cual=0;
-
+pthread_mutex_t mutex;
 struct op{
-
     int page;
     int next;
     int pos;
-
 };
-
 void* genRandNum(void*){
-
     srand(time(NULL));
-    
     //El ciclo genera n cantidad de referencias
     for(int i=0; i<200; i++){
         int num = rand() % (101 - 1); //Generar numeros aleatorios entre 1-100
         ingresar.push_back(num);
     }
-    
 }
-
 bool rep(int x){
     int num=1;
     for (int i = 0; i < 20; i++)
@@ -48,11 +39,7 @@ bool rep(int x){
         return true;
     }
 }
-
 int change(int index){
-    // if(index==ingresar.size()-1){
-    //     return ingresar.size()-1;
-    // }
     vector<op> ver;
     for (int i = 0; i < 20; i++)
     {
@@ -70,7 +57,6 @@ int change(int index){
             if(ingresar[j]==actual.page){
                 if(actual.next<(j-actual.next)){
                     actual.next=j-actual.next;
-                    // cout<<"hubo\n";
                 }
             }
         }
@@ -78,7 +64,7 @@ int change(int index){
     op tmp;
     tmp.next=0;
     for (int i = 0; i < ver.size(); i++)
-    {   
+    {
         if(ver[i].next==0){
             tmp=ver[i];
             break;
@@ -89,9 +75,7 @@ int change(int index){
     }
     return tmp.pos;
 }
-
-void* opr(void*){
-    fallos=0;
+void* opr(void* csa){
     int newNum= 0;
     for (int j = 0; j < ingresar.size(); j++)
     {
@@ -101,71 +85,54 @@ void* opr(void*){
             {
                 if(memoria[i]==NULL){
                     if(rep(newNum)){
-                        // cout<<"h";
-                        hit=hit+1;
+                        hit++;
                     }else{//agregar si no esta rep
+                        pthread_mutex_lock(&mutex);
                         fallos++;
+                        pthread_mutex_unlock(&mutex);
                         memoria[i]=newNum;
                         break;
                     }
                 }
             }
         }else{
-            if(rep(newNum)){    //Si lo encuentra
-                // cout<<"h";
+            if(rep(newNum)){ //Si lo encuentra
                 hit++;
             }else{
                 //llamamos cual es el que vamos a cambiar y se cambia
+                pthread_mutex_lock(&mutex);
                 fallos++;
+                pthread_mutex_unlock(&mutex);
                 int cual= change(j);
                 memoria[cual]=ingresar[j];
             }
         }
     }
-    // for (int i = 0; i < 20; i++)
-    // {
-    //     cout<<i<<" "<<memoria[i]<<endl;
-    // }
-    cout<<"hits "<<hit<<" fallos "<<fallos<<" \nnumeros\n";
-    for (int i = 0; i < ingresar.size(); i++)
-    {
-        cout<<ingresar[i]<<"-";
-    }
-    cout<<endl;
     for (int i = 0; i < 20; i++)
     {
         cout<<"mem "<<i+1<<" :"<<memoria[i]<<endl;
     }
-    
+    ingresar.clear();
 }
-
 void* printFallos(void*){
-
-    cout<<"Fallos: "<<fallos<<endl;
+    cout<<endl<<"Fallos: "<<fallos<<" hits:"<<hit<<endl<<endl;
+    fallos=0;
+    hit=0;
     return NULL;
-
 }
-
 int main(){
-    
     pthread_t thread1, thread2, thread3;
     int iret1, iret2, iret3;
-    
     while(true){
-
         iret1 = pthread_create(&thread1, NULL, genRandNum, NULL);
             pthread_join(thread1, NULL);
-
         iret2 = pthread_create(&thread2, NULL, opr, NULL);
-            pthread_join(thread2, NULL);
             sleep(3);
-        fallos=0;
         iret3 = pthread_create(&thread3, NULL, printFallos, NULL);
+            pthread_join(thread2, NULL);
             pthread_join(thread3, NULL);
             sleep(10);
     }
-
-    
     pthread_exit(NULL);
     return 0;
 }
