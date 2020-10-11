@@ -1,7 +1,5 @@
-# Algoritmo-LRU-Algoritmo-Optimo
-Practica #2 Sistemas Operativos
+# LRU (Least Recently Used) / Optimum Agorithm
+## authors: Jesus Cueva, Johnnie Miralda, Gerardo Gonzales
 
-Grupo #4
-Gerardo Gonzales
-Jesus Cueva
-Johnnie Miralda
+This project was made for a class of Operating Systems in which we studied the algorithms used by different OS' to manage the paging memory. In this case we coded 
+the LRU algorithm and the Optimum algorithm both in C++ and with the use of pthreads.
